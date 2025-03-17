@@ -1,15 +1,18 @@
 package com.movienetscape.authorization.dto.request;
 
-
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class CreateCredentialRequest {
-    private String email;
-    private String password;
-    private String role;
+@NoArgsConstructor
+@Builder
+public class SimpleMessageResponse {
+
+    private String message;
+
+
 }
+

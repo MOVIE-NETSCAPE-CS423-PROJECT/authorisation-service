@@ -4,10 +4,11 @@ package com.movienetscape.authorization.controller;
 import com.movienetscape.authorization.dto.request.*;
 import com.movienetscape.authorization.dto.response.LoginResponse;
 import com.movienetscape.authorization.dto.response.RefreshTokenResponse;
-import com.movienetscape.authorization.model.Role;
-import com.movienetscape.authorization.service.AuthorisationService;
+import com.movienetscape.authorization.dto.response.SimpleMessageResponse;
+import com.movienetscape.authorization.service.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +16,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 public class AuthorizationController {
 
-    private final AuthorisationService authService;
+    private final AuthenticationService authService;
 
     private final Logger logger = LoggerFactory.getLogger(AuthorizationController.class);
 
-    public AuthorizationController(AuthorisationService authService) {
+    public AuthorizationController(AuthenticationService authService) {
         this.authService = authService;
     }
 
@@ -30,22 +31,37 @@ public class AuthorizationController {
     }
 
     @PostMapping("/create")
-    public CreateCredentialResponse createCredential(@RequestBody CreateCredentialRequest request) {
-        return authService.createCredential(request.getEmail(), request.getPassword(), Role.USER);
+    public ResponseEntity<CreateCredentialResponse> createCredential(@RequestBody CreateCredentialRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.createCredential(request.getEmail(), request.getPassword()));
     }
 
-    @PostMapping("/refreshtoken")
-    public RefreshTokenResponse refreshToken(@RequestBody RefreshTokenRequest request) {
-        return authService.refreshToken(request.getRefreshToken());
+    @PostMapping("/refresh-token")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
+    @PostMapping("/change-password")
+    public ResponseEntity<SimpleMessageResponse> setPassword(@RequestBody ChangePasswordRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.resetPassword(request));
+    }
+
+
+    @PostMapping("/verify-password-reset-token")
+    public ResponseEntity<SimpleMessageResponse> verifyToken(@RequestBody SimpleStringRequest verifyTokenRequest) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.verifyToken(verifyTokenRequest));
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LogoutRequest request) {
         String accessToken = authorizationHeader.replace("Bearer ", "");
         authService.logout(accessToken, request.getRefreshToken());
-        return ResponseEntity.ok("Logout successful");
+        return ResponseEntity.ok("logout successful");
     }
 
+
+    @PostMapping("/forgot-password/{email}")
+    public ResponseEntity<SimpleMessageResponse> sendPasswordResetToken(@PathVariable String email) {
+        return ResponseEntity.ok(authService.sendTokenToEmail(email));
+    }
 
 }

@@ -9,8 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.time.LocalDateTime;
-import java.util.Objects;
-
+import java.util.*;
 
 
 @Data
@@ -18,7 +17,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "netscape_user_credential")
-public class Credential {
+public class UserCredential {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long credentialId;
@@ -29,9 +28,7 @@ public class Credential {
     @Column(nullable = false)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -39,16 +36,21 @@ public class Credential {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Credential(String userId, Role role) {
-        this.userId = userId;
-        this.role = role;
+
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    public void updatePasswordHash(String newPasswordHash) {
-        this.passwordHash = newPasswordHash;
+
+    public void changePassword(String newPassword) {
+        this.passwordHash = newPassword;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -66,7 +68,7 @@ public class Credential {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Credential that = (Credential) o;
+        UserCredential that = (UserCredential) o;
         return Objects.equals(credentialId, that.credentialId);
     }
 
@@ -80,11 +82,12 @@ public class Credential {
         return "Credential{" +
                 "credentialId=" + credentialId +
                 ", userId='" + userId + '\'' +
-                ", role=" + role +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
     }
+
+
 
 
 }
