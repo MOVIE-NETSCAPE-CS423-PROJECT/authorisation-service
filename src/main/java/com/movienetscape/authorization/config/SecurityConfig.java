@@ -21,18 +21,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/v1/auth/login").permitAll()
-                                .requestMatchers("/api/v1/auth/create").permitAll()
-                                .requestMatchers("/auth/key/jwks").permitAll()
-                                .requestMatchers("/api/v1/auth/refresh-token").permitAll()
-                                .requestMatchers("/api/v1/auth/change-password").permitAll()
-                                .requestMatchers("/api/v1/auth/forgot-password/**").permitAll()
-                                .requestMatchers("/api/v1/auth/verify-password-reset-token").permitAll()
-
-                                .requestMatchers("/api/v1/auth/logout").permitAll()
-                                .anyRequest().authenticated());
+        http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 

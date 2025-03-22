@@ -16,6 +16,7 @@ import com.movienetscape.authorization.util.exception.*;
 import com.movienetscape.authorization.model.UserCredential;
 import com.movienetscape.authorization.repository.CredentialRepository;
 import com.movienetscape.authorization.util.TokenGrant;
+import com.movienetscape.usermanagementservice.util.exception.BadRequestException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -76,6 +77,8 @@ public class AuthenticationService {
         UserCredential user = credentialRepository.findByUserId(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("Email not found: " + request.getEmail()));
 
+//         if ()tokenRepository.findTokenVerificationByUserId(request.getEmail());
+
         user.changePassword(passwordEncoder.encode(request.getNewPassword()));
         credentialRepository.save(user);
         return new SimpleMessageResponse("Password changed successfully");
@@ -87,7 +90,7 @@ public class AuthenticationService {
         TokenVerification tokenVerification = tokenRepository.findTokenVerificationByToken(
                 simpleStringRequest.getData());
         if (tokenVerification == null) {
-            throw new NotFoundException("Invalid Token");
+            throw new BadRequestException("Invalid Token");
         }
         if (!isTokenValid(tokenVerification)) throw new TokenExpiredException("Token has expired");
 
@@ -220,7 +223,7 @@ public class AuthenticationService {
                     .expirationTime(expirationTime)
                     .jwtID(jti)
                     .claim("username", userId)
-                    .claim("roles", role.name())
+                    .claim("role", role.name())
                     .build();
 
             SignedJWT signedJWT = new SignedJWT(
